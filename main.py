@@ -1,38 +1,109 @@
-from dotenv import load_dotenv
-import os
+from services.ocean import search_companies
+from services.prospeo_search import search_person
+from services.prospeo import find_person
+from services.brevo import send_email
 
-load_dotenv()
+from utils.save_lead import save_lead
+from utils.logger import logger
 
-print("=" * 50)
-print("VOCALLABS OUTREACH PIPELINE")
-print("=" * 50)
+print("=" * 60)
+print("VOCALLABS OUTREACH AUTOMATION PIPELINE")
+print("=" * 60)
 
-# Check API keys
-ocean_token = os.getenv("OCEAN_API_TOKEN")
-brevo_key = os.getenv("BREVO_API_KEY")
+company_name = input("\nEnter company name: ")
 
-print("\nAPI STATUS")
-print("Ocean Token Loaded:", bool(ocean_token))
-print("Brevo Key Loaded:", bool(brevo_key))
+print("\n[STEP 1] Searching company using Ocean API...")
 
-company = input("\nEnter company domain: ")
+try:
+    company_result = search_companies(company_name)
 
-print("\nStage 1 - Ocean.io")
-print(f"Searching similar companies for {company}")
+    print("\nOcean Result:")
+    print(company_result)
 
-print("\nStage 2 - Prospeo")
-print("Finding decision makers")
+except Exception as e:
+    print("\nOcean Error:")
+    print(e)
 
-print("\nStage 3 - EazyReach")
-print("Resolving work emails")
+print("\n[STEP 2] Finding decision makers using Prospeo Search...")
 
-print("\nStage 4 - Brevo")
-print("Preparing outreach emails")
+search_result = search_person(company_name)
 
-print("\nSafety Check")
-confirm = input("Send emails? (yes/no): ")
+print("\nSearch Result:")
+print(search_result)
 
-if confirm.lower() == "yes":
-    print("Emails sent successfully")
-else:
-    print("Cancelled")
+if not search_result.get("results"):
+    print("\nNo decision makers found.")
+    exit()
+
+email = None
+first_name = None
+full_name = None
+
+for result in search_result["results"]:
+
+    try:
+        full_name = result["person"]["full_name"]
+
+        print(f"\nTrying: {full_name}")
+
+        person_result = find_person(
+            full_name,
+            company_name
+        )
+
+        if (
+            person_result
+            and not person_result.get("error")
+            and "person" in person_result
+        ):
+
+            email = person_result["person"]["email"]["email"]
+            first_name = person_result["person"]["first_name"]
+
+            print(f"\nSUCCESS: {full_name}")
+            print(f"Email: {email}")
+
+            logger.info(f"Company: {company_name}")
+            logger.info(f"Decision Maker: {full_name}")
+            logger.info(f"Email: {email}")
+
+            break
+
+    except Exception as e:
+        print("Skipped:", e)
+
+if not email:
+    print("\nNo verified email found.")
+    exit()
+
+confirm = input(
+    "\nSend outreach email? (yes/no): "
+)
+
+if confirm.lower() != "yes":
+    print("\nEmail sending cancelled.")
+    exit()
+
+print("\n[STEP 3] Sending Email using Brevo...")
+
+email_result = send_email(
+    email,
+    first_name
+)
+
+print("\nBrevo Result:")
+print(email_result)
+
+save_lead(
+    company_name,
+    full_name,
+    email,
+    "Email Sent"
+)
+
+logger.info(f"Email Sent Successfully to {email}")
+
+print("\nLead saved to leads.csv")
+print("Activity logged to pipeline.log")
+
+print("\nPipeline Completed Successfully!")

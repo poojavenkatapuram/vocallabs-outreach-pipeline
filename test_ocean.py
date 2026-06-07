@@ -1,18 +1,5 @@
-import os
-import requests
-from dotenv import load_dotenv
+from services.ocean import search_companies
 
-load_dotenv()
+result = search_companies("microsoft.com")
 
-token = os.getenv("OCEAN_API_TOKEN")
-
-headers = {
-    "X-Api-Token": token
-}
-
-url = "https://api.ocean.io/v2/credits/balance"
-
-response = requests.get(url, headers=headers)
-
-print("Status:", response.status_code)
-print(response.text)
+print(result)

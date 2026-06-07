@@ -6,19 +6,20 @@ load_dotenv()
 
 OCEAN_API_TOKEN = os.getenv("OCEAN_API_TOKEN")
 
-def search_companies():
+def search_companies(domain):
+
     headers = {
         "X-Api-Token": OCEAN_API_TOKEN,
         "Content-Type": "application/json"
     }
 
     payload = {
+        "size": 5,
         "companiesFilters": {
-            "primaryLocations": {
-                "includeCountries": ["us"]
-            }
-        },
-        "size": 5
+            "lookalikeDomains": [
+                domain
+            ]
+        }
     }
 
     response = requests.post(
@@ -26,5 +27,8 @@ def search_companies():
         headers=headers,
         json=payload
     )
+
+    print("Status Code:", response.status_code)
+    print("Response:", response.text)
 
     return response.json()

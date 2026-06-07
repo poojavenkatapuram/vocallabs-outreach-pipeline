@@ -2,13 +2,13 @@ import os
 import requests
 from dotenv import load_dotenv
 
-# Load environment variables from .env
 load_dotenv()
 
 BREVO_API_KEY = os.getenv("BREVO_API_KEY")
 
 
 def send_email(to_email, first_name):
+
     url = "https://api.brevo.com/v3/smtp/email"
 
     headers = {
@@ -20,7 +20,7 @@ def send_email(to_email, first_name):
     payload = {
         "sender": {
             "name": "Pooja",
-            "email": "venkatapuram.pooja.22031@iitgoa.ac.in"
+            "email": "pooja@poojavenkatapuram.online"
         },
         "to": [
             {
@@ -35,11 +35,13 @@ def send_email(to_email, first_name):
                 <h2>Hello {first_name}</h2>
 
                 <p>
-                This is a test email sent using the Brevo API.
+                This email was sent automatically using the
+                Vocallabs Outreach Pipeline.
                 </p>
 
                 <p>
-                Ocean API and Brevo integration are working successfully.
+                Ocean API, Prospeo API and Brevo API are
+                successfully integrated.
                 </p>
 
                 <p>
@@ -51,18 +53,12 @@ def send_email(to_email, first_name):
         """
     }
 
-    try:
-        response = requests.post(
-            url,
-            headers=headers,
-            json=payload
-        )
+    response = requests.post(
+        url,
+        headers=headers,
+        json=payload
+    )
 
-        print("Status Code:", response.status_code)
-        print("Response:", response.text)
+    print("Status Code:", response.status_code)
 
-        return response.json()
-
-    except Exception as e:
-        print("Brevo Error:", e)
-        return None
+    return response.json()
