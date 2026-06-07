@@ -1,32 +1,30 @@
 import os
 import requests
+from dotenv import load_dotenv
+
+load_dotenv()
 
 OCEAN_API_TOKEN = os.getenv("OCEAN_API_TOKEN")
 
-
-def search_companies(company_name):
-    """
-    Search similar companies using Ocean.io API
-    """
-
+def search_companies():
     headers = {
-        "Authorization": f"Bearer {OCEAN_API_TOKEN}",
+        "X-Api-Token": OCEAN_API_TOKEN,
         "Content-Type": "application/json"
     }
 
     payload = {
-        "company_name": company_name
+        "companiesFilters": {
+            "primaryLocations": {
+                "includeCountries": ["us"]
+            }
+        },
+        "size": 5
     }
 
-    try:
-        response = requests.post(
-            "https://api.ocean.io/v1/search",
-            headers=headers,
-            json=payload
-        )
+    response = requests.post(
+        "https://api.ocean.io/v3/search/companies",
+        headers=headers,
+        json=payload
+    )
 
-        return response.json()
-
-    except Exception as e:
-        print("Ocean Error:", e)
-        return None
+    return response.json()
