@@ -1,5 +1,9 @@
 import os
 import requests
+from dotenv import load_dotenv
+
+# Load environment variables from .env
+load_dotenv()
 
 BREVO_API_KEY = os.getenv("BREVO_API_KEY")
 
@@ -27,24 +31,22 @@ def send_email(to_email, first_name):
         "subject": "Automation Outreach",
         "htmlContent": f"""
         <html>
-        <body>
-        <h2>Hello {first_name}</h2>
+            <body>
+                <h2>Hello {first_name}</h2>
 
-        <p>
-        I came across your company and thought it might be a great fit
-        for modern outreach automation solutions.
-        </p>
+                <p>
+                This is a test email sent using the Brevo API.
+                </p>
 
-        <p>
-        Would love to connect and discuss.
-        </p>
+                <p>
+                Ocean API and Brevo integration are working successfully.
+                </p>
 
-        <p>
-        Regards,<br>
-        Pooja
-        </p>
-
-        </body>
+                <p>
+                Regards,<br>
+                Pooja
+                </p>
+            </body>
         </html>
         """
     }
@@ -55,6 +57,9 @@ def send_email(to_email, first_name):
             headers=headers,
             json=payload
         )
+
+        print("Status Code:", response.status_code)
+        print("Response:", response.text)
 
         return response.json()
 
